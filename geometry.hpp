@@ -17,8 +17,8 @@ namespace Geometry {
 		Vect operator-(const Vect &a) const {return Vect(x - a.x, y - a.y);}
 		Vect operator*(const double &t) const {return Vect(x * t, y * t);}
 		Vect operator/(const double &t) const {return Vect(x / t, y / t);}
-		long long operator*(const Vect &a) const {return (long long)x * a.x + (long long)y * a.y;}
-		long long operator^(const Vect &a) const {return (long long)x * a.y - (long long)y * a.x;}
+		double operator*(const Vect &a) const {return x * a.x + y * a.y;}
+		double operator^(const Vect &a) const {return x * a.y - y * a.x;}
 		Vect &operator+=(const Vect &a) {return *this = *this + a;}
 		Vect &operator-=(const Vect &a) {return *this = *this - a;}
 		Vect &operator*=(const double &t) {return *this = *this * t;}
@@ -30,7 +30,13 @@ namespace Geometry {
 		}
 	};
 	using Point = Vect;
-	using polygon = vector<Vect>;
+	struct Polygon: vector<Point> {
+		double area() {
+			double ans = 0;
+			for (int i = 0; i < (int)size(); i++) ans += at(i) ^ at((i + 1) % size());
+			return ans / 2;
+		}
+	};
 	struct Line {
 		Point s;
 		Vect dir;
@@ -38,21 +44,34 @@ namespace Geometry {
 		Line() = default;
 		Line(Point _s, Vect _dir): s(_s), dir(_dir) {}
 	};
+	struct Circle {
+		Point O;
+		double r;
 
-	long long dist(Point u, Point v) {
-		return (long long)(u.x - v.x) * (u.x - v.x) + (long long)(u.y - v.y) * (u.y - v.y);
-	}
+		Circle() = default;
+		Circle(Point _O, double _r): O(_O), r(_r) {}
+		double sector(double rad) {return r * r * rad / 2;}
+		double arc(double rad) {return (r * r * rad - r * r * sin(rad)) / 2;}
+	};
+
+	double dist(Point u, Point v) {return sqrt((u.x - v.x) * (u.x - v.x) + (u.y - v.y) * (u.y - v.y));}
+	double angle(Vect a, Vect b) {return atan2(a ^ b, a * b);}
 	int onSegment(Point p, Line s) {
 		return fabs(s.dir ^ (p - s.s)) <= eps && (p - s.s) * (p - s.s - s.dir) <= 0;
 	}
 	Point intersection(Line a, Line b) {
-		Vect p = b.s - a.s;
-		double t = (a.dir ^ p) / (b.dir ^ a.dir);
+		double t = (a.dir ^ (b.s - a.s)) / (b.dir ^ a.dir);
 		return b.s + b.dir * t;
 	}
-	double angle(Vect a, Vect b) {return acos(min(max(a * b / a.length() / b.length(), -1.0), 1.0));}
-	polygon Andrew(polygon a) {
-		polygon ans;
+	pair<Point, Point>intersection(Circle &a, Circle &b) {
+		Vect u = b.O - a.O;
+		double rad = acos((a.r * a.r + u.length() * u.length() - b.r * b.r) / a.r / u.length() / 2);
+		Vect v = u;
+		u.rotate(-rad), v.rotate(rad);
+		return {u + a.O, v + a.O};
+	}
+	Polygon Andrew(Polygon a) {
+		Polygon ans;
 		sort(a.begin(), a.end(), [](const Point &u, const Point &v) {
 			return u.x != v.x ? u.x < v.x : u.y < v.y;
 		});
@@ -76,7 +95,7 @@ namespace Geometry {
 		}
 		return ans;
 	}
-	long long diameter(polygon a) {
+	long long diameter(Polygon a) {
 		const int n = a.size();
 		if (n == 1) return 0;
 		if (n == 2) return dist(a[0], a[1]);
