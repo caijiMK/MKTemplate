@@ -5,6 +5,8 @@
 #include <vector>
 
 namespace Geometry {
+	using namespace std;
+
 	const double eps = 1e-6;
 	const double pi = acos(-1);
 
@@ -95,11 +97,11 @@ namespace Geometry {
 		}
 		return ans;
 	}
-	long long diameter(Polygon a) {
+	double diameter(Polygon a) {
 		const int n = a.size();
 		if (n == 1) return 0;
 		if (n == 2) return dist(a[0], a[1]);
-		long long ans = 0;
+		double ans = 0;
 		a.push_back(a[0]);
 		for (int i = 0, pos = 2; i < n; i++) {
 			Point u = a[i], v = a[i + 1];
