@@ -3,5 +3,6 @@
 
 #include "mint.hpp"
 #include "number_theory.hpp"
+#include "geometry.hpp"
 
 #endif
