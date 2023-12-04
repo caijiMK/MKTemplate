@@ -48,7 +48,6 @@ namespace Geometry {
 	Point intersection(Line a, Line b) {
 		Vect p = b.s - a.s;
 		double t = (a.dir ^ p) / (b.dir ^ a.dir);
-		// eprintf("%lf\n", t);
 		return b.s + b.dir * t;
 	}
 	double angle(Vect a, Vect b) {return acos(min(max(a * b / a.length() / b.length(), -1.0), 1.0));}
