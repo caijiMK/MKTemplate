@@ -5,7 +5,6 @@
 using namespace std;
 
 namespace NumberTheory {
-
 	namespace MillerRabin {
 		const int prime[] = {2, 3, 5, 7, 9, 11, 13, 17, 19, 23, 29, 31, 37};
 

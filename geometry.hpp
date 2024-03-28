@@ -6,7 +6,6 @@
 using namespace std;
 
 namespace Geometry {
-
 	const double eps = 1e-6;
 	const double pi = acos(-1);
 
