@@ -3,9 +3,9 @@
 
 #include <cmath>
 #include <vector>
+using namespace std;
 
 namespace Geometry {
-	using namespace std;
 
 	const double eps = 1e-6;
 	const double pi = acos(-1);
