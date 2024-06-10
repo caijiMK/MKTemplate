@@ -63,6 +63,42 @@ namespace Poly {
 			for (int i = 0; i < n; i++) g[i] = f[i] % mod * inv % mod;
 			return ;
 		}
+		// void NTT(poly &g, int flag) const {
+		// 	int n = g.size();
+		// 	vector<int> f(g.begin(), g.end());
+		// 	if (flag) {
+		// 		for (int mid = n >> 1; mid >= 1; mid >>= 1) {
+		// 			int w1 = power(G, (mod - 1) / mid / 2);
+		// 			vector<int> w(mid);
+		// 			w[0] = 1;
+		// 			for (int i = 1; i < mid; i++) w[i] = (long long)w[i - 1] * w1 % mod;
+		// 			for (int i = 0; i < n; i += mid << 1)
+		// 				for (int j = 0; j < mid; j++) {
+		// 					int t = (long long)(f[i + j] - f[i + mid + j] + mod) * w[j] % mod;
+		// 					f[i + j] = f[i + j] + f[i + mid + j] >= mod ?
+		// 						f[i + j] + f[i + mid + j] - mod : f[i + j] + f[i + mid + j];
+		// 					f[i + mid + j] = t;
+		// 				}
+		// 		}
+		// 		for (int i = 0; i < n; i++) g[i] = f[i];
+		// 	} else {
+		// 		for (int mid = 1; mid < n; mid <<= 1) {
+		// 			int w1 = power(invG, (mod - 1) / mid / 2);
+		// 			vector<int> w(mid);
+		// 			w[0] = 1;
+		// 			for (int i = 1; i < mid; i++) w[i] = (long long)w[i - 1] * w1 % mod;
+		// 			for (int i = 0; i < n; i += mid << 1)
+		// 				for (int j = 0; j < mid; j++) {
+		// 					int t = (long long)w[j] * f[i + mid + j] % mod;
+		// 					f[i + mid + j] = f[i + j] - t < 0 ? f[i + j] - t + mod : f[i + j] - t;
+		// 					f[i + j] = f[i + j] + t >= mod ? f[i + j] + t - mod : f[i + j] + t;
+		// 				}
+		// 		}
+		// 		int inv = power(n, mod - 2);
+		// 		for (int i = 0; i < n; i++) g[i] = (long long)f[i] * inv % mod;
+		// 	}
+		// 	return ;
+		// }
 		poly operator*(poly b) const {
 			poly a(*this);
 			int n = 1, len = (int)(a.size() + b.size()) - 1;
