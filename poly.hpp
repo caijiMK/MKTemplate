@@ -7,7 +7,7 @@ using namespace std;
 namespace Poly {
 	const int mod = 998244353, G = 3, invG = 332748118;
 
-	int power(int a, int b) {
+	inline int power(int a, int b) {
 		int ans = 1;
 		while (b) {
 			if (b & 1) ans = (long long)ans * a % mod;
@@ -25,7 +25,7 @@ namespace Poly {
 			const poly &a = *this;
 			poly ans(max(a.size(), b.size()));
 			for (int i = 0; i < (int)ans.size(); i++)
-				ans[i] = (i < (int)a.size() ? a[i] : 0) + (i < (int)b.size() ? b[i] : 0);
+				ans[i] = ((i < (int)a.size() ? a[i] : 0) + (i < (int)b.size() ? b[i] : 0)) % mod;
 			return ans;
 		}
 		poly operator+=(const poly &b) {return *this = *this + b;}
@@ -33,7 +33,7 @@ namespace Poly {
 			const poly &a = *this;
 			poly ans(max(a.size(), b.size()));
 			for (int i = 0; i < (int)ans.size(); i++)
-				ans[i] = (i < (int)a.size() ? a[i] : 0) - (i < (int)b.size() ? b[i] : 0);
+				ans[i] = ((i < (int)a.size() ? a[i] : 0) - (i < (int)b.size() ? b[i] : 0) + mod) % mod;
 			return ans;
 		}
 		poly operator-=(const poly &b) {return *this = *this - b;}
@@ -155,7 +155,7 @@ namespace Poly {
 		}
 	};
 
-	poly power(poly f, int b) { // need F[0] = 1.
+	inline poly power(poly f, int b) { // need F[0] = 1.
 		f = f.ln();
 		for (int i = 0; i < (int)f.size(); i++) f[i] = (long long)f[i] * b % mod;
 		f = f.exp();
