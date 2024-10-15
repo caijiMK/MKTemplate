@@ -18,6 +18,7 @@ namespace Poly {
 	}
 
 	struct poly: vector<int> {
+		poly(initializer_list<int> &&arg): vector<int>(arg) {}
 		template<typename ... argT>
 		poly(argT &&... args): vector<int>(forward<argT>(args)...) {}
 
