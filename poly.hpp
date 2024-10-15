@@ -62,7 +62,7 @@ namespace Poly {
 			}
 			int inv = flag ? 1 : power(n, mod - 2);
 			for (int i = 0; i < n; i++) g[i] = f[i] % mod * inv % mod;
-			return ;
+			return;
 		}
 		// void NTT(poly &g, int flag) const {
 		// 	int n = g.size();
@@ -98,7 +98,7 @@ namespace Poly {
 		// 		int inv = power(n, mod - 2);
 		// 		for (int i = 0; i < n; i++) g[i] = (long long)f[i] * inv % mod;
 		// 	}
-		// 	return ;
+		// 	return;
 		// }
 		poly operator*(poly b) const {
 			poly a(*this);
