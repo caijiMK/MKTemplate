@@ -64,6 +64,7 @@ namespace Poly {
 			for (int i = 0; i < n; i++) g[i] = f[i] % mod * inv % mod;
 			return;
 		}
+		// The following code is a faster implementation of NTT based on the transpose theorem.
 		// void NTT(poly &g, int flag) const {
 		// 	int n = g.size();
 		// 	vector<int> f(g.begin(), g.end());
@@ -198,6 +199,7 @@ namespace Poly {
 		f = f.exp();
 		return f;
 	}
+	// The following code don't need F[0] = 1, but it's useless.
 	// poly power(poly f, int b1, int b2 = -1) {
 	// 	if (b2 == -1) b2 = b1;
 	// 	int n = f.size(), p = 0;
