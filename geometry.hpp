@@ -3,6 +3,7 @@
 
 #include <cmath>
 #include <vector>
+#include <algorithm>
 using namespace std;
 
 namespace Geometry {
@@ -55,23 +56,23 @@ namespace Geometry {
 		double arc(double rad) {return (r * r * rad - r * r * sin(rad)) / 2;}
 	};
 
-	double dist(Point u, Point v) {return sqrt((u.x - v.x) * (u.x - v.x) + (u.y - v.y) * (u.y - v.y));}
-	double angle(Vect a, Vect b) {return atan2(a ^ b, a * b);}
-	int onSegment(Point p, Line s) {
+	inline double dist(Point u, Point v) {return sqrt((u.x - v.x) * (u.x - v.x) + (u.y - v.y) * (u.y - v.y));}
+	inline double angle(Vect a, Vect b) {return atan2(a ^ b, a * b);}
+	inline int onSegment(Point p, Line s) {
 		return fabs(s.dir ^ (p - s.s)) <= eps && (p - s.s) * (p - s.s - s.dir) <= 0;
 	}
-	Point intersection(Line a, Line b) {
+	inline Point intersection(Line a, Line b) {
 		double t = (a.dir ^ (b.s - a.s)) / (b.dir ^ a.dir);
 		return b.s + b.dir * t;
 	}
-	pair<Point, Point>intersection(Circle &a, Circle &b) {
+	inline pair<Point, Point>intersection(Circle &a, Circle &b) {
 		Vect u = b.O - a.O;
 		double rad = acos((a.r * a.r + u.length() * u.length() - b.r * b.r) / a.r / u.length() / 2);
 		Vect v = u;
 		u.rotate(-rad), v.rotate(rad);
 		return {u + a.O, v + a.O};
 	}
-	Polygon Andrew(Polygon a) {
+	inline Polygon Andrew(Polygon a) {
 		Polygon ans;
 		sort(a.begin(), a.end(), [](const Point &u, const Point &v) {
 			return u.x != v.x ? u.x < v.x : u.y < v.y;
@@ -96,7 +97,22 @@ namespace Geometry {
 		}
 		return ans;
 	}
-	double diameter(Polygon a) {
+	inline Polygon Minkowski(Polygon l, Polygon r) {
+		Polygon diffl, diffr;
+		int sizl = l.size(), sizr = r.size();
+		for (int i = 1; i < sizl; i++) diffl.push_back(l[i] - l[i - 1]);
+		for (int i = 1; i < sizr; i++) diffr.push_back(r[i] - r[i - 1]);
+		Polygon ans;
+		ans.push_back(l[0] + r[0]);
+		int pl = 0, pr = 0;
+		while (pl < sizl - 1 && pr < sizr - 1)
+			if ((diffl[pl] ^ diffr[pr]) < 0) ans.push_back(ans.back() + diffl[pl++]);
+			else ans.push_back(ans.back() + diffr[pr++]);
+		while (pl < sizl - 1) ans.push_back(ans.back() + diffl[pl++]);
+		while (pr < sizr - 1) ans.push_back(ans.back() + diffr[pr++]);
+		return ans;
+	}
+	inline double Diameter(Polygon a) {
 		const int n = a.size();
 		if (n == 1) return 0;
 		if (n == 2) return dist(a[0], a[1]);
