@@ -33,6 +33,10 @@ namespace Geometry {
 	};
 	using Point = Vect;
 	struct Polygon: vector<Point> {
+		Polygon(initializer_list<Point> &&arg): vector<Point>(arg) {}
+		template<typename... argT>
+		Polygon(argT &&...args): vector<Point>(forward<argT>(args)...) {}
+
 		double area() {
 			double ans = 0;
 			for (int i = 0; i < (int)size(); i++) ans += at(i) ^ at((i + 1) % size());
