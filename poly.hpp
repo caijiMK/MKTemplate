@@ -2,9 +2,10 @@
 #define MKTemplate_Poly
 
 #include <vector>
-using namespace std;
 
 namespace Poly {
+	using namespace std;
+
 	const int mod = 998244353, G = 3, invG = 332748118;
 
 	inline int power(int a, int b) {
