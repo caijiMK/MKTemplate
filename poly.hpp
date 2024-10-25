@@ -21,7 +21,7 @@ namespace Poly {
 	struct poly: vector<int> {
 		poly(initializer_list<int> &&arg): vector<int>(arg) {}
 		template<typename... argT>
-		poly(argT &&...args): vector<int>(forward<argT>(args)...) {}
+		explicit poly(argT &&...args): vector<int>(forward<argT>(args)...) {}
 
 		poly operator+(const poly &b) const {
 			const poly &a = *this;
