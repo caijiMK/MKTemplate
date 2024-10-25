@@ -11,6 +11,9 @@ namespace Geometry {
 	const double eps = 1e-6;
 	const double pi = acos(-1);
 
+	// 判断 x < 0 或 x = 0 或 x > 0
+	inline int sign(double x) {return fabs(x) <= eps ? 0 : (x > 0 ? 1 : -1);}
+
 	// 向量 & 点
 	struct Vect {
 		double x, y;
@@ -27,6 +30,9 @@ namespace Geometry {
 		Vect &operator-=(const Vect &a) {return *this = *this - a;}
 		Vect &operator*=(const double &t) {return *this = *this * t;}
 		Vect &operator/=(const double &t) {return *this = *this / t;}
+		bool operator==(const Vect &a) {
+			return sign(fabs(x - a.x)) == 0 && sign(fabs(y - a.y)) == 0;
+		}
 		double length() const {return sqrt(x * x + y * y);}
 		Vect normal() const {return *this / length();}
 	};
@@ -68,8 +74,6 @@ namespace Geometry {
 		Circle(Point _O, double _r): O(_O), r(_r) {}
 	};
 
-	// 判断 x < 0 或 x = 0 或 x > 0
-	inline int sign(double x) {return fabs(x) <= eps ? 0 : (x > 0 ? 1 : -1);}
 	// 向量 u 逆时针旋转 rad 后得到的向量
 	inline Vect rotate(Vect u, double rad) {
 		return Vect(u.x * cos(rad) - u.y * sin(rad), u.x * sin(rad) + u.y * cos(rad));
