@@ -2,14 +2,19 @@
 #define MKTemplate_Geometry
 
 #include <cmath>
+#include <chrono>
+#include <random>
 #include <vector>
 #include <algorithm>
 
 namespace Geometry {
 	using namespace std;
 
-	const double eps = 1e-6;
+	const double eps = 1e-9;
 	const double pi = acos(-1);
+
+	// 判断 x < 0 或 x = 0 或 x > 0
+	inline int sign(double x) {return fabs(x) <= eps ? 0 : (x > 0 ? 1 : -1);}
 
 	// 向量 & 点
 	struct Vect {
@@ -17,16 +22,19 @@ namespace Geometry {
 
 		Vect() = default;
 		Vect(double _x, double _y): x(_x), y(_y) {}
-		Vect operator+(const Vect &a) const {return Vect(x + a.x, y + a.y);}
-		Vect operator-(const Vect &a) const {return Vect(x - a.x, y - a.y);}
+		Vect operator+() const {return *this;}
+		Vect operator-() const {return Vect(-x, -y);}
+		Vect operator+(const Vect &b) const {return Vect(x + b.x, y + b.y);}
+		Vect operator-(const Vect &b) const {return Vect(x - b.x, y - b.y);}
 		Vect operator*(const double &t) const {return Vect(x * t, y * t);}
 		Vect operator/(const double &t) const {return Vect(x / t, y / t);}
-		double operator*(const Vect &a) const {return x * a.x + y * a.y;}
-		double operator^(const Vect &a) const {return x * a.y - y * a.x;}
-		Vect &operator+=(const Vect &a) {return *this = *this + a;}
-		Vect &operator-=(const Vect &a) {return *this = *this - a;}
+		double operator*(const Vect &b) const {return x * b.x + y * b.y;}
+		double operator^(const Vect &b) const {return x * b.y - y * b.x;}
+		Vect &operator+=(const Vect &b) {return *this = *this + b;}
+		Vect &operator-=(const Vect &b) {return *this = *this - b;}
 		Vect &operator*=(const double &t) {return *this = *this * t;}
 		Vect &operator/=(const double &t) {return *this = *this / t;}
+		bool operator==(const Vect &b) {return !sign(x - b.x) && !sign(y - b.y);}
 		double length() const {return sqrt(x * x + y * y);}
 		Vect normal() const {return *this / length();}
 	};
@@ -66,10 +74,11 @@ namespace Geometry {
 
 		Circle() = default;
 		Circle(Point _O, double _r): O(_O), r(_r) {}
+		double area() {return r * r * pi;}
 	};
 
-	// 判断 x < 0 或 x = 0 或 x > 0
-	inline int sign(double x) {return fabs(x) <= eps ? 0 : (x > 0 ? 1 : -1);}
+	// 两点的中点
+	inline Point middle(Point a, Point b) {return Point((a.x + b.x) / 2, (a.y + b.y) / 2);}
 	// 向量 u 逆时针旋转 rad 后得到的向量
 	inline Vect rotate(Vect u, double rad) {
 		return Vect(u.x * cos(rad) - u.y * sin(rad), u.x * sin(rad) + u.y * cos(rad));
@@ -172,7 +181,7 @@ namespace Geometry {
 		return ans;
 	}
 	// 两个凸包的闵可夫斯基和
-	inline Polygon Minkowski(const Polygon &l, const Polygon &r) {
+	inline Polygon Minkowski(Polygon l, Polygon r) {
 		Polygon diffl, diffr;
 		int sizl = l.size(), sizr = r.size();
 		for (int i = 1; i < sizl; i++) diffl.push_back(l[i] - l[i - 1]);
@@ -207,19 +216,98 @@ namespace Geometry {
 	inline double sector(double r, double rad) {return r * r * rad / 2;}
 	// 弧度为 rad 的弓形的面积
 	inline double arch(double r, double rad) {return sector(r, rad) - r * r * sin(rad) / 2;}
-	// 两个圆的公切线个数（判断两个圆的位置关系）
-	inline int countOfCommonTangentLines(Circle a, Circle b) {
-		if (sign(dist(a.O, b.O) - a.r - b.r) > 0) return 4;
-		else if (sign(dist(a.O, b.O) - a.r - b.r) == 0) return 3;
-		else if (sign(dist(a.O, b.O) - fabs(a.r - b.r)) == 0) return 1;
-		else if (sign(dist(a.O, b.O) - fabs(a.r - b.r)) < 0) return 0;
-		else return 2;
+	// 三角形内切圆
+	inline Circle incircle(Point a, Point b, Point c) {
+		Line u(a, rotate(b - a, angle(b - a, c - a) / 2)), v(b, rotate(a - b, angle(a - b, c - b) / 2));
+		Circle ans;
+		ans.O = intersection(u, v);
+		ans.r = dist(ans.O, Line(a, b - a));
+		return ans;
+	}
+	// 三角形外接圆
+	inline Circle circumscribedCircle(Point a, Point b, Point c) {
+		Line u(middle(a, b), rotate(b - a, pi / 2)), v(middle(a, c), rotate(c - a, pi / 2));
+		Circle ans;
+		ans.O = intersection(u, v);
+		ans.r = dist(ans.O, a);
+		return ans;
+	}
+	// 最小圆覆盖
+	inline Circle minimumCircle(Polygon a) {
+		mt19937 gen(chrono::system_clock::now().time_since_epoch().count());
+		int n = a.size();
+		shuffle(a.begin(), a.end(), gen);
+		Circle ans(Point(0, 0), 0);
+		for (int i = 0; i < n; i++)
+			if (sign(dist(ans.O, a[i]) - ans.r) > 0) {
+				ans = Circle(a[i], 0);
+				for (int j = 0; j < i; j++)
+					if (sign(dist(ans.O, a[j]) - ans.r) > 0) {
+						ans = Circle(middle(a[i], a[j]), dist(a[i], a[j]) / 2);
+						for (int k = 1; k < j; k++)
+							if (sign(dist(ans.O, a[k]) - ans.r) > 0)
+								ans = circumscribedCircle(a[i], a[j], a[k]);
+					}
+			}
+		return ans;
+	}
+	// 圆与直线的交点
+	inline pair<Point, Point> intersection(Circle a, Line b) {
+		Point p = projection(a.O, b);
+		double dis = dist(a.O, p);
+		dis = sqrt(a.r * a.r - dis * dis);
+		return {p - b.dir.normal() * dis, p + b.dir.normal() * dis};
 	}
 	// 两个圆的交点
-	inline pair<Point, Point>intersection(Circle a, Circle b) {
+	inline pair<Point, Point> intersection(Circle a, Circle b) {
 		Vect u = b.O - a.O;
 		double rad = acos((a.r * a.r + u.length() * u.length() - b.r * b.r) / a.r / u.length() / 2);
-		return {rotate(u, -rad) + a.O, rotate(u, rad) + a.O};
+		u = u.normal() * a.r;
+		return {a.O + rotate(u, rad), a.O + rotate(u, -rad)};
+	}
+	// 点到圆的切点
+	inline pair<Point, Point> tangent(Point a, Circle b) {
+		double rad = asin(b.r / dist(b.O, a));
+		double dis = dist(b.O, a);
+		dis = sqrt(dis * dis - b.r * b.r);
+		Vect u = (b.O - a).normal() * dis;
+		return {a + rotate(u, -rad), a + rotate(u, rad)};
+	}
+	// 两个圆的公切线，返回切点
+	inline vector<pair<Point, Point>> commonTangent(Circle a, Circle b) {
+		vector<pair<Point, Point>> ans;
+		double dis = dist(a.O, b.O);
+		if (sign(dis - fabs(a.r - b.r)) < 0) return ans;
+		else if (sign(dis - fabs(a.r - b.r)) == 0) {
+			ans.push_back(intersection(a, b));
+			return ans;
+		}
+		int flag = 0;
+		if (a.r < b.r) swap(a, b), flag = 1;
+		Vect u = (b.O - a.O).normal();
+		double rad = acos((a.r - b.r) / dis);
+		ans.emplace_back(a.O + rotate(u, rad) * a.r, b.O + rotate(-u, rad - pi) * b.r);
+		ans.emplace_back(a.O + rotate(u, -rad) * a.r, b.O + rotate(-u, pi - rad) * b.r);
+		if (sign(dis - a.r - b.r) >= 0) {
+			rad = acos((a.r + b.r) / dis);
+			if (sign(rad)) {
+				ans.emplace_back(a.O + rotate(u, rad) * a.r, b.O + rotate(-u, rad) * b.r);
+				ans.emplace_back(a.O + rotate(u, -rad) * a.r, b.O + rotate(-u, -rad) * b.r);
+			} else ans.emplace_back(a.O + u * a.r, b.O - u * b.r);
+		}
+		if (flag)
+			for (auto &i : ans) swap(i.first, i.second);
+		return ans;
+	}
+	// 两个圆的交的面积
+	inline double intersectionArea(Circle a, Circle b) {
+		int state = commonTangent(a, b).size();
+		if (state <= 1) return min(a.area(), b.area());
+		if (state >= 3) return 0;
+		pair<Point, Point> tmp = intersection(a, b);
+		double rada = fmod(angle(tmp.second - a.O, tmp.first - a.O) + 2 * pi, 2 * pi);
+		double radb = fmod(angle(tmp.first - b.O, tmp.second - b.O) + 2 * pi, 2 * pi);
+		return arch(a.r, rada) + arch(b.r, radb);
 	}
 }
 
