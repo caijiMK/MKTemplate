@@ -161,7 +161,7 @@ namespace Geometry {
 		return val ? 2 : 0;
 	}
 	// 点集的凸包
-	inline Polygon Andrew(Polygon a) {
+	inline Polygon andrew(Polygon a) {
 		Polygon ans;
 		sort(a.begin(), a.end(), [](const Point &u, const Point &v) {
 			return u.x != v.x ? u.x < v.x : u.y < v.y;
@@ -188,7 +188,7 @@ namespace Geometry {
 		return ans;
 	}
 	// 两个凸包的闵可夫斯基和
-	inline Polygon Minkowski(Polygon l, Polygon r) {
+	inline Polygon minkowski(Polygon l, Polygon r) {
 		Polygon diffl, diffr;
 		int sizl = l.size(), sizr = r.size();
 		for (int i = 1; i < sizl; i++) diffl.push_back(l[i] - l[i - 1]);
@@ -204,7 +204,7 @@ namespace Geometry {
 		return ans;
 	}
 	// 旋转卡壳求凸包直径
-	inline double Diameter(Polygon a) {
+	inline double diameter(Polygon a) {
 		const int n = a.size();
 		if (n == 1) return 0;
 		if (n == 2) return dist(a[0], a[1]);
@@ -220,7 +220,7 @@ namespace Geometry {
 		return ans;
 	}
 	// 半平面交
-	inline pair<Polygon, vector<Line>>intersection(vector<Line> a) {
+	inline pair<Polygon, vector<Line>> halfplane(vector<Line> a) {
 		deque<Line> ln;
 		deque<Point> pt;
 		sort(a.begin(), a.end(), [](const Line &x, const Line &y) -> int {
@@ -229,14 +229,21 @@ namespace Geometry {
 			else return isLeft(x.s, y);
 		});
 		for (int i = 0; i < (int)a.size(); i++)
-			if (!i || !isSame(a[i - 1], a[i])) {
-				while (!pt.empty() && !isLeft(pt.back(), a[i])) pt.pop_back(), ln.pop_back();
-				while (!pt.empty() && !isLeft(pt.front(), a[i])) pt.pop_front(), ln.pop_front();
-				if (!ln.empty()) pt.push_back(intersection(ln.back(), a[i]));
+			if (!i || !isParallel(a[i - 1], a[i])) {
+				while (!pt.empty() && isRight(pt.back(), a[i])) pt.pop_back(), ln.pop_back();
+				while (!pt.empty() && isRight(pt.front(), a[i])) pt.pop_front(), ln.pop_front();
+				if (ln.size() == 1 &&
+					sign(atan2(a[i].dir.y, a[i].dir.x) - atan2(ln.back().dir.y, ln.back().dir.x) - pi) >= 0)
+					return {Polygon(), vector<Line>()};
+				if (!ln.empty()) {
+					if (!sign(atan2(a[i].dir.y, a[i].dir.x) - atan2(ln.back().dir.y, ln.back().dir.x) - pi))
+						return {Polygon(), vector<Line>()};
+					pt.push_back(intersection(ln.back(), a[i]));
+				}
 				ln.push_back(a[i]);
 			}
-		while (!pt.empty() && !isLeft(pt.back(), ln.front())) pt.pop_back(), ln.pop_back();
-		if ((int)ln.size() == 1) return {Polygon(), vector<Line>()};
+		while (pt.size() >= 2 && isRight(pt.back(), ln.front())) pt.pop_back(), ln.pop_back();
+		if (ln.size() <= 2) return {Polygon(), vector<Line>()};
 		pt.push_back(intersection(ln.front(), ln.back()));
 		return {Polygon(pt.begin(), pt.end()), vector<Line>(ln.begin(), ln.end())};
 	}
