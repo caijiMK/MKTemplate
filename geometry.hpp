@@ -2,6 +2,7 @@
 #define MKTemplate_Geometry
 
 #include <cmath>
+#include <queue>
 #include <chrono>
 #include <random>
 #include <vector>
@@ -85,6 +86,10 @@ namespace Geometry {
 	}
 	// 两点距离
 	inline double dist(Point u, Point v) {return sqrt((u.x - v.x) * (u.x - v.x) + (u.y - v.y) * (u.y - v.y));}
+	// 判断点是否在直线左侧
+	inline int isLeft(Point a, Line b) {return sign(b.dir ^ (a - b.s)) > 0;}
+	// 判断点是否在直线右侧
+	inline int isRight(Point a, Line b) {return sign(b.dir ^ (a - b.s)) < 0;}
 	// 两个向量的夹角
 	inline double angle(Vect a, Vect b) {return atan2(a ^ b, a * b);}
 	// 向量 a 到向量 b 的投影
@@ -99,6 +104,8 @@ namespace Geometry {
 	inline int isIntersecting(Line a, Line b) {return !isParallel(a, b);}
 	// 判断两条直线是否垂直
 	inline int isOrthogonal(Line a, Line b) {return !sign(a.dir * b.dir);}
+	// 判断两条直线是否相等
+	inline int isSame(Line a, Line b) {return isParallel(a, b) && !sign(b.dir ^ (a.s - b.s));}
 	// 判断点 a 是否在直线 b 上
 	inline int isOnLine(Point a, Line b) {return !sign(b.dir ^ (a - b.s));}
 	// 判断点 a 是否在线段 b 上
@@ -211,6 +218,27 @@ namespace Geometry {
 			ans = max({ans, dist(u, a[pos]), dist(v, a[pos])});
 		}
 		return ans;
+	}
+	// 半平面交
+	inline pair<Polygon, vector<Line>>intersection(vector<Line> a) {
+		deque<Line> ln;
+		deque<Point> pt;
+		sort(a.begin(), a.end(), [](const Line &x, const Line &y) -> int {
+			double radx = atan2(x.dir.y, x.dir.x), rady = atan2(y.dir.y, y.dir.x);
+			if (sign(radx - rady)) return sign(radx - rady) == -1;
+			else return isLeft(x.s, y);
+		});
+		for (int i = 0; i < (int)a.size(); i++)
+			if (!i || !isSame(a[i - 1], a[i])) {
+				while (!pt.empty() && !isLeft(pt.back(), a[i])) pt.pop_back(), ln.pop_back();
+				while (!pt.empty() && !isLeft(pt.front(), a[i])) pt.pop_front(), ln.pop_front();
+				if (!ln.empty()) pt.push_back(intersection(ln.back(), a[i]));
+				ln.push_back(a[i]);
+			}
+		while (!pt.empty() && !isLeft(pt.back(), ln.front())) pt.pop_back(), ln.pop_back();
+		if ((int)ln.size() == 1) return {Polygon(), vector<Line>()};
+		pt.push_back(intersection(ln.front(), ln.back()));
+		return {Polygon(pt.begin(), pt.end()), vector<Line>(ln.begin(), ln.end())};
 	}
 	// 扇形面积
 	inline double sector(double r, double rad) {return r * r * rad / 2;}
