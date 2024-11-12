@@ -2,6 +2,7 @@
 #define MKTemplate_Poly
 
 #include <vector>
+#include <algorithm>
 
 namespace Poly {
 	using namespace std;
@@ -65,43 +66,45 @@ namespace Poly {
 			for (int i = 0; i < n; i++) g[i] = f[i] % mod * inv % mod;
 			return;
 		}
-		// The following code is a faster implementation of NTT based on the transpose theorem.
-		// void NTT(poly &g, int flag) const {
-		// 	int n = g.size();
-		// 	vector<int> f(g.begin(), g.end());
-		// 	if (flag) {
-		// 		for (int mid = n >> 1; mid >= 1; mid >>= 1) {
-		// 			int w1 = power(G, (mod - 1) / mid / 2);
-		// 			vector<int> w(mid);
-		// 			w[0] = 1;
-		// 			for (int i = 1; i < mid; i++) w[i] = (long long)w[i - 1] * w1 % mod;
-		// 			for (int i = 0; i < n; i += mid << 1)
-		// 				for (int j = 0; j < mid; j++) {
-		// 					int t = (long long)(f[i + j] - f[i + mid + j] + mod) * w[j] % mod;
-		// 					f[i + j] = f[i + j] + f[i + mid + j] >= mod ?
-		// 						f[i + j] + f[i + mid + j] - mod : f[i + j] + f[i + mid + j];
-		// 					f[i + mid + j] = t;
-		// 				}
-		// 		}
-		// 		for (int i = 0; i < n; i++) g[i] = f[i];
-		// 	} else {
-		// 		for (int mid = 1; mid < n; mid <<= 1) {
-		// 			int w1 = power(invG, (mod - 1) / mid / 2);
-		// 			vector<int> w(mid);
-		// 			w[0] = 1;
-		// 			for (int i = 1; i < mid; i++) w[i] = (long long)w[i - 1] * w1 % mod;
-		// 			for (int i = 0; i < n; i += mid << 1)
-		// 				for (int j = 0; j < mid; j++) {
-		// 					int t = (long long)w[j] * f[i + mid + j] % mod;
-		// 					f[i + mid + j] = f[i + j] - t < 0 ? f[i + j] - t + mod : f[i + j] - t;
-		// 					f[i + j] = f[i + j] + t >= mod ? f[i + j] + t - mod : f[i + j] + t;
-		// 				}
-		// 		}
-		// 		int inv = power(n, mod - 2);
-		// 		for (int i = 0; i < n; i++) g[i] = (long long)f[i] * inv % mod;
-		// 	}
-		// 	return;
-		// }
+		// 下面是基于转置原理的 NTT，相对朴素版本效率更高。
+		/*
+		void NTT(poly &g, int flag) const {
+			int n = g.size();
+			vector<int> f(g.begin(), g.end());
+			if (flag) {
+				for (int mid = n >> 1; mid >= 1; mid >>= 1) {
+					int w1 = power(G, (mod - 1) / mid / 2);
+					vector<int> w(mid);
+					w[0] = 1;
+					for (int i = 1; i < mid; i++) w[i] = (long long)w[i - 1] * w1 % mod;
+					for (int i = 0; i < n; i += mid << 1)
+						for (int j = 0; j < mid; j++) {
+							int t = (long long)(f[i + j] - f[i + mid + j] + mod) * w[j] % mod;
+							f[i + j] = f[i + j] + f[i + mid + j] >= mod ?
+								f[i + j] + f[i + mid + j] - mod : f[i + j] + f[i + mid + j];
+							f[i + mid + j] = t;
+						}
+				}
+				for (int i = 0; i < n; i++) g[i] = f[i];
+			} else {
+				for (int mid = 1; mid < n; mid <<= 1) {
+					int w1 = power(invG, (mod - 1) / mid / 2);
+					vector<int> w(mid);
+					w[0] = 1;
+					for (int i = 1; i < mid; i++) w[i] = (long long)w[i - 1] * w1 % mod;
+					for (int i = 0; i < n; i += mid << 1)
+						for (int j = 0; j < mid; j++) {
+							int t = (long long)w[j] * f[i + mid + j] % mod;
+							f[i + mid + j] = f[i + j] - t < 0 ? f[i + j] - t + mod : f[i + j] - t;
+							f[i + j] = f[i + j] + t >= mod ? f[i + j] + t - mod : f[i + j] + t;
+						}
+				}
+				int inv = power(n, mod - 2);
+				for (int i = 0; i < n; i++) g[i] = (long long)f[i] * inv % mod;
+			}
+			return;
+		}
+		*/
 		poly operator*(poly b) const {
 			poly a(*this);
 			int n = 1, len = (int)(a.size() + b.size()) - 1;
@@ -200,28 +203,43 @@ namespace Poly {
 		f = f.exp();
 		return f;
 	}
-	// The following code don't need F[0] = 1, but it's useless.
-	// poly power(poly f, int b1, int b2 = -1) {
-	// 	if (b2 == -1) b2 = b1;
-	// 	int n = f.size(), p = 0;
-	// 	reverse(f.begin(), f.end());
-	// 	while (!f.empty() && !f.back()) f.pop_back(), p++;
-	// 	if (f.empty() || (long long)p * b1 >= n) return poly(n);
-	// 	int v = f.back();
-	// 	int inv = power(v, mod - 2);
-	// 	for (int &i : f) i = (long long)i * inv % mod;
-	// 	reverse(f.begin(), f.end());
-	// 	f = f.ln();
-	// 	for (int &i : f) i = (long long)i * b1 % mod;
-	// 	f = f.exp();
-	// 	reverse(f.begin(), f.end());
-	// 	for (int i = 1; i <= p * b1; i++) f.push_back(0);
-	// 	reverse(f.begin(), f.end());
-	// 	f.resize(n);
-	// 	v = power(v, b2);
-	// 	for (int &i : f) i = (long long)i * v % mod;
-	// 	return f;
-	// }
+	/*
+	不要求 F[0] = 1
+	b1 为指数 mod m，b2 为指数 mod (phi(m) = mod - 1)
+	如果 b1 传入之前被取模了记得特判 a[0] = 0 且指数 > n 的情况，此时多项式每一位系数都是 0
+	*/
+	/*
+	inline poly power(poly f, int b1, int b2 = -1) {
+		if (b2 == -1) b2 = b1;
+		int n = f.size(), p = 0;
+		reverse(f.begin(), f.end());
+		while (!f.empty() && !f.back()) f.pop_back(), p++;
+		if (f.empty() || (long long)p * b1 >= n) return poly(n);
+		int v = f.back();
+		int inv = power(v, mod - 2);
+		for (int &i : f) i = (long long)i * inv % mod;
+		reverse(f.begin(), f.end());
+		f = f.ln();
+		for (int &i : f) i = (long long)i * b1 % mod;
+		f = f.exp();
+		reverse(f.begin(), f.end());
+		for (int i = 1; i <= p * b1; i++) f.push_back(0);
+		reverse(f.begin(), f.end());
+		f.resize(n);
+		v = power(v, b2);
+		for (int &i : f) i = (long long)i * v % mod;
+		return f;
+	}
+	*/
+	inline pair<poly, poly> div(poly f, poly g) {
+		int n = f.size() - 1, m = g.size() - 1;
+		reverse(f.begin(), f.end()), reverse(g.begin(), g.end());
+		g.resize(n - m + 1);
+		poly ans = f * g.inv();
+		ans.resize(n - m + 1);
+		reverse(ans.begin(), ans.end());
+		return {ans, f - g * ans};
+	}
 }
 
 #endif
