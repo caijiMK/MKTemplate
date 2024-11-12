@@ -40,7 +40,7 @@ namespace Poly {
 			return ans;
 		}
 		poly operator-=(const poly &b) {return *this = *this - b;}
-		void NTT(poly &g, int flag) const {
+		static void NTT(poly &g, int flag) {
 			int n = g.size();
 			vector<unsigned long long> f(g.begin(), g.end());
 			vector<int> swp(n);
@@ -68,7 +68,7 @@ namespace Poly {
 		}
 		// 下面是基于转置原理的 NTT，相对朴素版本效率更高。
 		/*
-		void NTT(poly &g, int flag) const {
+		static void NTT(poly &g, int flag) {
 			int n = g.size();
 			vector<int> f(g.begin(), g.end());
 			if (flag) {
