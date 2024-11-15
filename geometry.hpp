@@ -12,7 +12,7 @@ namespace Geometry {
 	using namespace std;
 
 	const double eps = 1e-9;
-	const double pi = acos(-1);
+	const double pi = acos((double)-1);
 
 	// 判断 x < 0 或 x = 0 或 x > 0
 	inline int sign(double x) {return fabs(x) <= eps ? 0 : (x > 0 ? 1 : -1);}
@@ -81,11 +81,11 @@ namespace Geometry {
 	// 两点的中点
 	inline Point middle(Point a, Point b) {return Point((a.x + b.x) / 2, (a.y + b.y) / 2);}
 	// 向量 u 逆时针旋转 rad 后得到的向量
-	inline Vect rotate(Vect u, double rad) {
-		return Vect(u.x * cos(rad) - u.y * sin(rad), u.x * sin(rad) + u.y * cos(rad));
+	inline Vect rotate(Vect a, double rad) {
+		return Vect(a.x * cos(rad) - a.y * sin(rad), a.x * sin(rad) + a.y * cos(rad));
 	}
 	// 两点距离
-	inline double dist(Point u, Point v) {return sqrt((u.x - v.x) * (u.x - v.x) + (u.y - v.y) * (u.y - v.y));}
+	inline double dist(Point a, Point b) {return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));}
 	// 判断点是否在直线左侧
 	inline int isLeft(Point a, Line b) {return sign(b.dir ^ (a - b.s)) > 0;}
 	// 判断点是否在直线右侧
@@ -188,19 +188,19 @@ namespace Geometry {
 		return ans;
 	}
 	// 两个凸包的闵可夫斯基和
-	inline Polygon minkowski(Polygon l, Polygon r) {
-		Polygon diffl, diffr;
-		int sizl = l.size(), sizr = r.size();
-		for (int i = 1; i < sizl; i++) diffl.push_back(l[i] - l[i - 1]);
-		for (int i = 1; i < sizr; i++) diffr.push_back(r[i] - r[i - 1]);
+	inline Polygon minkowski(Polygon a, Polygon b) {
+		Polygon diffa, diffb;
+		int siza = a.size(), sizb = b.size();
+		for (int i = 1; i < siza; i++) diffa.push_back(a[i] - a[i - 1]);
+		for (int i = 1; i < sizb; i++) diffb.push_back(b[i] - b[i - 1]);
 		Polygon ans;
-		ans.push_back(l[0] + r[0]);
+		ans.push_back(a[0] + b[0]);
 		int pl = 0, pr = 0;
-		while (pl < sizl - 1 && pr < sizr - 1)
-			if (sign(diffl[pl] ^ diffr[pr]) < 0) ans.push_back(ans.back() + diffl[pl++]);
-			else ans.push_back(ans.back() + diffr[pr++]);
-		while (pl < sizl - 1) ans.push_back(ans.back() + diffl[pl++]);
-		while (pr < sizr - 1) ans.push_back(ans.back() + diffr[pr++]);
+		while (pl < siza - 1 && pr < sizb - 1)
+			if (sign(diffa[pl] ^ diffb[pr]) < 0) ans.push_back(ans.back() + diffa[pl++]);
+			else ans.push_back(ans.back() + diffb[pr++]);
+		while (pl < siza - 1) ans.push_back(ans.back() + diffa[pl++]);
+		while (pr < sizb - 1) ans.push_back(ans.back() + diffb[pr++]);
 		return ans;
 	}
 	// 旋转卡壳求凸包直径
@@ -260,7 +260,7 @@ namespace Geometry {
 		return ans;
 	}
 	// 三角形外接圆
-	inline Circle circumscribedCircle(Point a, Point b, Point c) {
+	inline Circle circumcircle(Point a, Point b, Point c) {
 		Line u(middle(a, b), rotate(b - a, pi / 2)), v(middle(a, c), rotate(c - a, pi / 2));
 		Circle ans;
 		ans.O = intersection(u, v);
@@ -281,7 +281,7 @@ namespace Geometry {
 						ans = Circle(middle(a[i], a[j]), dist(a[i], a[j]) / 2);
 						for (int k = 1; k < j; k++)
 							if (sign(dist(ans.O, a[k]) - ans.r) > 0)
-								ans = circumscribedCircle(a[i], a[j], a[k]);
+								ans = circumcircle(a[i], a[j], a[k]);
 					}
 			}
 		return ans;
