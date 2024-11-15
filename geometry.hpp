@@ -262,10 +262,8 @@ namespace Geometry {
 	// 三角形外接圆
 	inline Circle circumcircle(Point a, Point b, Point c) {
 		Line u(middle(a, b), rotate(b - a, pi / 2)), v(middle(a, c), rotate(c - a, pi / 2));
-		Circle ans;
-		ans.O = intersection(u, v);
-		ans.r = dist(ans.O, a);
-		return ans;
+		Point O = intersection(u, v);
+		return Circle(O, dist(O, a));
 	}
 	// 最小圆覆盖
 	inline Circle minimumCircle(Polygon a) {
@@ -279,7 +277,7 @@ namespace Geometry {
 				for (int j = 0; j < i; j++)
 					if (sign(dist(ans.O, a[j]) - ans.r) > 0) {
 						ans = Circle(middle(a[i], a[j]), dist(a[i], a[j]) / 2);
-						for (int k = 1; k < j; k++)
+						for (int k = 0; k < j; k++)
 							if (sign(dist(ans.O, a[k]) - ans.r) > 0)
 								ans = circumcircle(a[i], a[j], a[k]);
 					}
