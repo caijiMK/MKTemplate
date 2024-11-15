@@ -15,7 +15,7 @@ namespace Geometry {
 	const double pi = acos((double)-1);
 
 	// 判断 x < 0 或 x = 0 或 x > 0
-	inline int sign(double x) {return fabs(x) <= eps ? 0 : (x > 0 ? 1 : -1);}
+	inline int sign(double x) {return fabs(x) <= eps ? 0 : x > 0 ? 1 : -1;}
 
 	// 向量 & 点
 	struct Vect {
