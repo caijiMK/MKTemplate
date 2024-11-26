@@ -55,7 +55,7 @@ namespace Poly {
 				for (int i = 1; i < mid; i++) w[i] = (long long)w[i - 1] * w1 % mod;
 				for (int i = 0; i < n; i += mid << 1)
 					for (int j = 0; j < mid; j++) {
-						int t = (long long)w[j] * f[i + mid + j] % mod;
+						int t = f[i + mid + j] % mod * w[j] % mod;
 						f[i + mid + j] = f[i + j] - t + mod;
 						f[i + j] += t;
 					}
