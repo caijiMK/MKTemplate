@@ -240,6 +240,39 @@ namespace Poly {
 		reverse(ans.begin(), ans.end());
 		return {ans, f - g * ans};
 	}
+	inline vector<int> eval(poly f, vector<int> vec) {
+		static vector<poly> mul;
+		int n = max(f.size(), vec.size()), m = vec.size();
+		mul.resize(4 * n + 5);
+		f.resize(n), vec.resize(n);
+		auto init = [&vec](auto &&self, int l, int r, int now = 1) -> void {
+			if (l == r) {mul[now] = poly({1, (mod - vec[l]) % mod}); return;}
+			int mid = (l + r) / 2;
+			self(self, l, mid, now << 1);
+			self(self, mid + 1, r, now << 1 | 1);
+			mul[now] = mul[now << 1] * mul[now << 1 | 1];
+			return;
+		};
+		init(init, 0, n - 1);
+		auto mult = [](poly f, poly g) -> poly {
+			int n = f.size(), m = g.size();
+			reverse(g.begin(), g.end());
+			g *= f;
+			for (int i = 0; i < n; i++) f[i] = g[i + m - 1];
+			return f;
+		};
+		auto solve = [&vec, &mult](auto &&self, int l, int r, poly f, int now = 1) -> void {
+			f.resize(r - l + 1);
+			if (l == r) {vec[l] = f[0]; return;}
+			int mid = (l + r) / 2;
+			self(self, l, mid, mult(f, mul[now << 1 | 1]), now << 1);
+			self(self, mid + 1, r, mult(f, mul[now << 1]), now << 1 | 1);
+			return;
+		};
+		solve(solve, 0, n - 1, mult(f, mul[1].inv()));
+		vec.resize(m);
+		return vec;
+	}
 }
 
 #endif
