@@ -12,7 +12,7 @@ namespace Geometry {
 	using namespace std;
 
 	const double eps = 1e-9;
-	const double pi = acos((double)-1);
+	const double pi = acos(-1);
 
 	// 判断 x < 0 或 x = 0 或 x > 0
 	inline int sign(double x) {return fabs(x) <= eps ? 0 : x > 0 ? 1 : -1;}
@@ -85,7 +85,7 @@ namespace Geometry {
 		return Vect(a.x * cos(rad) - a.y * sin(rad), a.x * sin(rad) + a.y * cos(rad));
 	}
 	// 两点距离
-	inline double dist(Point a, Point b) {return sqrt((a.x - b.x) * (a.x - b.x) + (a.y - b.y) * (a.y - b.y));}
+	inline double dist(Point a, Point b) {return hypot(a.x - b.x, a.y - b.y);}
 	// 判断点是否在直线左侧
 	inline int isLeft(Point a, Line b) {return sign(b.dir ^ (a - b.s)) > 0;}
 	// 判断点是否在直线右侧

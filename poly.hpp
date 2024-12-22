@@ -247,10 +247,9 @@ namespace Poly {
 		f.resize(n), vec.resize(n);
 		auto init = [&vec](auto &&self, int l, int r, int now = 1) -> void {
 			if (l == r) {mul[now] = poly({1, (mod - vec[l]) % mod}); return;}
-			int mid = (l + r) / 2;
-			self(self, l, mid, now << 1);
-			self(self, mid + 1, r, now << 1 | 1);
-			mul[now] = mul[now << 1] * mul[now << 1 | 1];
+			int mid = (l + r) / 2, ls = now * 2, rs = now * 2 + 1;
+			self(self, l, mid, ls), self(self, mid + 1, r, rs);
+			mul[now] = mul[ls] * mul[rs];
 			return;
 		};
 		init(init, 0, n - 1);
@@ -264,14 +263,35 @@ namespace Poly {
 		auto solve = [&vec, &mult](auto &&self, int l, int r, poly f, int now = 1) -> void {
 			f.resize(r - l + 1);
 			if (l == r) {vec[l] = f[0]; return;}
-			int mid = (l + r) / 2;
-			self(self, l, mid, mult(f, mul[now << 1 | 1]), now << 1);
-			self(self, mid + 1, r, mult(f, mul[now << 1]), now << 1 | 1);
+			int mid = (l + r) / 2, ls = now * 2, rs = now * 2 + 1;
+			self(self, l, mid, mult(f, mul[rs]), ls), self(self, mid + 1, r, mult(f, mul[ls]), rs);
 			return;
 		};
 		solve(solve, 0, n - 1, mult(f, mul[1].inv()));
 		vec.resize(m);
 		return vec;
+	}
+	inline poly interpolation(vector<pair<int, int>> vec) {
+		static vector<poly> mul;
+		int n = vec.size();
+		mul.resize(4 * n + 5);
+		poly x(n), y(n);
+		for (int i = 0; i < n; i++) x[i] = vec[i].first, y[i] = vec[i].second;
+		auto init = [&x](auto &&self, int l, int r, int now = 1) -> void {
+			if (l == r) {mul[now] = poly({(mod - x[l]) % mod, 1}); return;}
+			int mid = (l + r) / 2, ls = now * 2, rs = now * 2 + 1;
+			self(self, l, mid, ls), self(self, mid + 1, r, rs);
+			mul[now] = mul[ls] * mul[rs];
+			return;
+		};
+		init(init, 0, n - 1);
+		vector<int> val = eval(mul[1].derivative(), x);
+		auto solve = [&y, &val](auto &&self, int l, int r, int now = 1) -> poly {
+			if (l == r) return poly({int((long long)y[l] * power(val[l], mod - 2) % mod)});
+			int mid = (l + r) / 2, ls = now * 2, rs = now * 2 + 1;
+			return self(self, l, mid, ls) * mul[rs] + self(self, mid + 1, r, rs) * mul[ls];
+		};
+		return solve(solve, 0, n - 1);
 	}
 }
 
