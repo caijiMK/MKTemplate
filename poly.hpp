@@ -1,6 +1,8 @@
 #ifndef MKTemplate_Poly
 #define MKTemplate_Poly
 
+#include <chrono>
+#include <random>
 #include <vector>
 #include <algorithm>
 
@@ -138,9 +140,42 @@ namespace Poly {
 			g.resize(size());
 			return g;
 		}
-		poly sqrt() const { // need F[0] = 1.
+		poly sqrt() const { // need F[0] != 0.
+			static auto Cipolla = [](int n) -> int {
+				if (n == 1) return 1;
+				static auto Legendre = [](int n) -> int {return power(n, (mod - 1) / 2);};
+				// assert(Legendre(n) == 1);
+				static mt19937 gen(chrono::system_clock::now().time_since_epoch().count());
+				int r;
+				do r = gen() % mod;
+				while (Legendre(((long long)r * r - n + mod) % mod) != mod - 1);
+				static int sqw;
+				sqw = ((long long)r * r - n + mod) % mod;
+				struct complex {
+					int r, i;
+
+					complex() = default;
+					complex(int _r, int _i): r(_r), i(_i) {}
+					complex operator*(const complex &b) const {
+						return complex(((long long)r * b.r + (long long)i * b.i % mod * sqw) % mod,
+							((long long)r * b.i + (long long)i * b.r) % mod);
+					}
+				};
+				static auto power = [](complex a, int b) -> complex {
+					complex ans(1, 0);
+					while (b) {
+						if (b & 1) ans = ans * a;
+						a = a * a;
+						b >>= 1;
+					}
+					return ans;
+				};
+				int ans = power(complex(r, 1), (mod + 1) / 2).r;
+				ans = min(ans, mod - ans);
+				return ans;
+			};
 			poly f = *this, g;
-			g.push_back(1);
+			g.push_back(Cipolla(f[0]));
 			int n = 1;
 			while (n < (int)f.size()) n <<= 1;
 			f.resize(n << 1);
