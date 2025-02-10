@@ -5,11 +5,12 @@ template<int mod>
 struct modint {
 	int v;
 
-	enum {NOMOD};
+	enum {WITHMOD};
 	modint() = default;
-	modint(int _v): v((_v % mod + mod) % mod) {}
-	modint(int _v, int): v(_v) {}
+	modint(int _v): v(_v) {}
+	modint(int _v, int): v((_v % mod + mod) % mod) {}
 	explicit operator int() const {return v;}
+	explicit operator long long() const {return v;}
 	modint operator+(const modint &x) const {return v + x.v >= mod ? v + x.v - mod : v + x.v;}
 	modint &operator+=(const modint &x) {v = (v + x.v >= mod ? v + x.v - mod : v + x.v); return *this;}
 	modint operator-(const modint &x) const {return v - x.v < 0 ? v - x.v + mod : v - x.v;}
