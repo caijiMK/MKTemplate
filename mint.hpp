@@ -1,32 +1,34 @@
 #ifndef MKTemplate_Mint
 #define MKTemplate_Mint
 
-struct mint {
-	static const int mod = 998244353;
+template<int mod>
+struct modint {
 	int v;
 
-	mint() = default;
-	mint(int _v): v(_v) {}
+	enum {NOMOD};
+	modint() = default;
+	modint(int _v): v((_v % mod + mod) % mod) {}
+	modint(int _v, int): v(_v) {}
 	explicit operator int() const {return v;}
-	mint operator+(const mint &x) const {return v + x.v - (v + x.v < mod ? 0 : mod);}
-	mint &operator+=(const mint &x) {return *this = *this + x;}
-	mint operator-(const mint &x) const {return v - x.v + (v - x.v >= 0 ? 0 : mod);}
-	mint &operator-=(const mint &x) {return *this = *this - x;}
-	mint operator*(const mint &x) const {return (long long)v * x.v % mod;}
-	mint &operator*=(const mint &x) {return *this = *this * x;}
-	mint inv() const {
-		mint a(*this), ans(1);
-		int b(mod - 2);
+	modint operator+(const modint &x) const {return v + x.v >= mod ? v + x.v - mod : v + x.v;}
+	modint &operator+=(const modint &x) {v = (v + x.v >= mod ? v + x.v - mod : v + x.v); return *this;}
+	modint operator-(const modint &x) const {return v - x.v < 0 ? v - x.v + mod : v - x.v;}
+	modint &operator-=(const modint &x) {v = (v - x.v < 0 ? v - x.v + mod : v - x.v); return *this;}
+	modint operator*(const modint &x) const {return (long long)v * x.v % mod;}
+	modint &operator*=(const modint &x) {v = (long long)v * x.v % mod; return *this;}
+	modint inv() const {
+		int a = v, b = mod - 2, ans = 1;
 		while (b) {
-			if (b & 1) ans *= a;
-			a *= a;
+			if (b & 1) ans = (long long)ans * a % mod;
+			a = (long long)a * a % mod;
 			b >>= 1;
 		}
 		return ans;
 	}
-	mint operator/(const mint &x) const {return *this * x.inv();}
-	mint &operator/=(const mint &x) {return *this = *this / x;}
-	mint operator-() {return mint(-v);}
+	modint operator/(const modint &x) const {return (long long)v * x.inv().v % mod;}
+	modint &operator/=(const modint &x) {v = (long long)v * x.inv().v % mod; return *this;}
+	modint operator-() {return modint(-v);}
 };
+using mint = modint<998244353>;
 
 #endif
