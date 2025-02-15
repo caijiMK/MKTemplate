@@ -140,11 +140,10 @@ namespace Poly {
 			g.resize(size());
 			return g;
 		}
-		poly sqrt() const { // need F[0] != 0.
+		poly sqrt() const { // F[0] 需要存在二次剩余。
 			static auto Cipolla = [](int n) -> int {
 				if (n == 1) return 1;
 				static auto Legendre = [](int n) -> int {return power(n, (mod - 1) / 2);};
-				// assert(Legendre(n) == 1);
 				static mt19937 gen(chrono::system_clock::now().time_since_epoch().count());
 				int r;
 				do r = gen() % mod;
@@ -267,13 +266,17 @@ namespace Poly {
 	}
 	*/
 	inline pair<poly, poly> div(poly f, poly g) {
+		if (f.size() < g.size()) return {poly({0}), f};
+		poly bak_f = f, bak_g = g;
 		int n = f.size() - 1, m = g.size() - 1;
 		reverse(f.begin(), f.end()), reverse(g.begin(), g.end());
 		g.resize(n - m + 1);
-		poly ans = f * g.inv();
-		ans.resize(n - m + 1);
-		reverse(ans.begin(), ans.end());
-		return {ans, f - g * ans};
+		poly q = f * g.inv();
+		q.resize(n - m + 1);
+		reverse(q.begin(), q.end());
+		poly r = bak_f - bak_g * q;
+		r.resize(m);
+		return {q, r};
 	}
 	inline vector<int> eval(poly f, vector<int> vec) {
 		static vector<poly> mul;
