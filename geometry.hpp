@@ -197,7 +197,7 @@ namespace Geometry {
 		ans.push_back(a[0] + b[0]);
 		int pl = 0, pr = 0;
 		while (pl < siza - 1 && pr < sizb - 1)
-			if (sign(diffa[pl] ^ diffb[pr]) < 0) ans.push_back(ans.back() + diffa[pl++]);
+			if (sign(diffa[pl] ^ diffb[pr]) > 0) ans.push_back(ans.back() + diffa[pl++]);
 			else ans.push_back(ans.back() + diffb[pr++]);
 		while (pl < siza - 1) ans.push_back(ans.back() + diffa[pl++]);
 		while (pr < sizb - 1) ans.push_back(ans.back() + diffb[pr++]);
