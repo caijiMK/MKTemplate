@@ -191,16 +191,17 @@ namespace Geometry {
 	inline Polygon minkowski(Polygon a, Polygon b) {
 		Polygon diffa, diffb;
 		int siza = a.size(), sizb = b.size();
-		for (int i = 1; i < siza; i++) diffa.push_back(a[i] - a[i - 1]);
-		for (int i = 1; i < sizb; i++) diffb.push_back(b[i] - b[i - 1]);
+		for (int i = 0; i < siza; i++) diffa.push_back(a[(i + 1) % siza] - a[i]);
+		for (int i = 0; i < sizb; i++) diffb.push_back(b[(i + 1) % sizb] - b[i]);
 		Polygon ans;
 		ans.push_back(a[0] + b[0]);
 		int pl = 0, pr = 0;
-		while (pl < siza - 1 && pr < sizb - 1)
+		while (pl < siza && pr < sizb)
 			if (sign(diffa[pl] ^ diffb[pr]) > 0) ans.push_back(ans.back() + diffa[pl++]);
 			else ans.push_back(ans.back() + diffb[pr++]);
-		while (pl < siza - 1) ans.push_back(ans.back() + diffa[pl++]);
-		while (pr < sizb - 1) ans.push_back(ans.back() + diffb[pr++]);
+		while (pl < siza) ans.push_back(ans.back() + diffa[pl++]);
+		while (pr < sizb) ans.push_back(ans.back() + diffb[pr++]);
+		ans.pop_back();
 		return ans;
 	}
 	// 旋转卡壳求凸包直径
